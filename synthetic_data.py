@@ -8,11 +8,13 @@ import utils
 import codecs
 import tqdm
 import glob
+import threading
 
 
-def main():
+def main(split):
     # root_dir = './test_ocrdataset'
-    root_dir = '/data0/dataset/ocr/recognition/ocr_500classes'
+    # root_dir = '/data0/dataset/ocr/recognition/ocr_500classes'
+    root_dir = '/Users/liyuan/Documents/Chinese_OCR_synthetic_data/'+split
     data = OCRData(root_dir)
     data.makeNeededDir()
     data.args['classes_number'] = 500
@@ -32,13 +34,13 @@ class OCRData(object):
 
     def setArguments(self):
         self.args['characters_length_tuple'] = (3, 6)
-        self.args['validation_rate'] = 0.2
-        self.args['test_rate'] = 0.2
-        self.args['background_image_dir'] = './background'
-        self.args['fonts_dir'] = './fonts'
-        self.args['characters_file_path'] = './characters.txt'
+        self.args['validation_rate'] = 0.1
+        self.args['test_rate'] = 0.1
+        self.args['background_image_dir'] = self.args['root_dir']+'/background'
+        self.args['fonts_dir'] = self.args['root_dir']+'/fonts'
+        self.args['characters_file_path'] = self.args['root_dir']+'/characters.txt'
         self.args['classes_number'] = 5
-        self.args['id_character_file_path'] = os.path.basename(self.args['characters_file_path']).split('.')[0] + '_top_%d.txt'%self.args['classes_number']
+        self.args['id_character_file_path'] = self.args['root_dir']+'/characters' + '_top_%d.txt'%self.args['classes_number']
         self.args['font_size_min'] = 32
         self.args['image_number'] = 10
         self.args['save_full_image'] = 0
@@ -105,7 +107,12 @@ class OCRData(object):
                 resize_rate = resize_rate * 2
                 image = image.resize((image.size[0]*resize_rate, image.size[1]*resize_rate))
                 font_size_max = image.size[0]/self.args['characters_length_tuple'][1]
-            font_size = random.randint(self.args['font_size_min'], font_size_max)
+            # print(self.args['font_size_min'])
+            # print(type(self.args['font_size_min']))
+            # print(font_size_max)
+            # print(type(font_size_max))
+            # change font_size_max to int, by Foxerlee
+            font_size = random.randint(self.args['font_size_min'], int(font_size_max))
             left_center_point= (random.randint(0, image.size[0]-font_size*max([len(i) for i in mulcontents])), random.randint(font_size*len(mulcontents), image.size[1]-font_size*len(mulcontents)/2))
             color = utils.setColor(image)
             for content in mulcontents:
@@ -195,5 +202,15 @@ class OCRData(object):
                 max_index = 0
         return max_index
 
+
 if __name__ == '__main__':
-    main()
+    t1 = threading.Thread(target=main, args=('1',))
+    t1.start()
+    t2 = threading.Thread(target=main, args=('2',))
+    t2.start()
+    t3 = threading.Thread(target=main, args=('3',))
+    t3.start()
+    t4 = threading.Thread(target=main, args=('4',))
+    t4.start()
+    t5 = threading.Thread(target=main, args=('5',))
+    t5.start()

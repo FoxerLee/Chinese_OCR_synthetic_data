@@ -128,7 +128,7 @@ def rotate_img(image, degree):
     for row in imgRotation:
         for element in row:
             if element[3] == 0:
-                for i in xrange(3):
+                for i in range(3):
                     element[i] = 0
     image = Image.fromarray(imgRotation)
     points = np.array(p.T, int)
@@ -162,7 +162,9 @@ def mergeBgimgAndTxtimgPoints(left_center, points):
     left, center_line = left_center
     top = center_line - (max(points[:, 1]) - min(points[:, 1]))/2
     for k in range(0, 4):
-        points[k, :] += np.array([left, top])
+        # change by Foxerlee
+        np.add(points[k, :], np.array([left, top]), out=points[k, :], casting="unsafe")
+        # points[k, :] += np.array([left, top])
     return points
 
 def setColor(roi_img):
@@ -248,10 +250,16 @@ def cropImageByPoints(image, points,):
 def addRandomInROI(roi):
     left, top, right, bottom = (roi[0][0],roi[0][1],roi[2][0],roi[2][1])
     max_randint = (bottom - top) / 6
-    new_left = random.randint(left-max_randint, left+max_randint/2)
-    new_top = random.randint(top-max_randint, top+max_randint/2)
-    new_right = random.randint(right-max_randint/2, right+max_randint)
-    new_bottom = random.randint(bottom, bottom+2*max_randint)
+    # change to int by Foxerlee
+    # print(max_randint)
+    # print(left)
+    # print(top)
+    # print(right)
+    # print(bottom)
+    new_left = random.randint(int(left-max_randint), int(left+max_randint/2))
+    new_top = random.randint(int(top-max_randint), int(top+max_randint/2))
+    new_right = random.randint(int(right-max_randint/2), int(right+max_randint))
+    new_bottom = random.randint(int(bottom), int(bottom+2*max_randint))
     return (new_left, new_top, new_right, new_bottom)
     
 def getOneLineRectanglePoints(one_line_points):
