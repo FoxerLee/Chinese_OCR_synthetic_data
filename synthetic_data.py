@@ -14,7 +14,7 @@ import threading
 def main(split):
     # root_dir = './test_ocrdataset'
     # root_dir = '/data0/dataset/ocr/recognition/ocr_500classes'
-    root_dir = '/Users/liyuan/Documents/Chinese_OCR_synthetic_data/'+split
+    root_dir = '/Users/liyuan/Documents/Chinese_OCR_synthetic_data'
     data = OCRData(root_dir)
     data.makeNeededDir()
     data.args['classes_number'] = 500
@@ -81,7 +81,8 @@ class OCRData(object):
                 self.saveImage(image, i)
             part_images, roi_points = utils.cropImageByPoints(image, points)
             self.saveImage(part_images, i, is_part=1)
-            self.saveAnnotation(content_index, points, i)
+            # self.saveAnnotation(content_index, points, i)
+            self.saveAnnotation(content, points, i)
         return
     
     
@@ -96,24 +97,34 @@ class OCRData(object):
             ann_path = os.path.join(self.args['annotations_dir'], ann_name)
             rectangle_points = utils.getOneLineRectanglePoints(points[index])
             with codecs.open(ann_path, 'w', encoding='utf-8') as file:
-                file.write(' '.join([ann_name.split('.')[0], str(rectangle_points.tolist()), str(one_content)]))
+                file.write(one_content)
             
     def putContent2Image(self, mulcontents, background_image_path, font_path, add_rectangle=0, resize_rate=2):
         try:
             image = Image.open(background_image_path)
             mulcontents_points = []
-            font_size_max = image.size[0]/self.args['characters_length_tuple'][1]
+            # font_size_max = image.size[0]/self.args['characters_length_tuple'][1]
+            # print(image.size)
+            # print(mulcontents)
+            # change to vertical
+            font_size_max = image.size[1] / self.args['characters_length_tuple'][1]
             while font_size_max < self.args['font_size_min']:
                 resize_rate = resize_rate * 2
                 image = image.resize((image.size[0]*resize_rate, image.size[1]*resize_rate))
-                font_size_max = image.size[0]/self.args['characters_length_tuple'][1]
-            # print(self.args['font_size_min'])
-            # print(type(self.args['font_size_min']))
-            # print(font_size_max)
-            # print(type(font_size_max))
+
+                # font_size_max = image.size[0]/self.args['characters_length_tuple'][1]
+                font_size_max = image.size[1] / self.args['characters_length_tuple'][1]
+
             # change font_size_max to int, by Foxerlee
             font_size = random.randint(self.args['font_size_min'], int(font_size_max))
-            left_center_point= (random.randint(0, image.size[0]-font_size*max([len(i) for i in mulcontents])), random.randint(font_size*len(mulcontents), image.size[1]-font_size*len(mulcontents)/2))
+
+            # left_center_point = (random.randint(0, image.size[0]-font_size*max([len(i) for i in mulcontents])),
+            #                      random.randint(font_size*len(mulcontents),
+            #                                     image.size[1]-font_size*len(mulcontents)/2))
+            left_center_point = (random.randint(font_size * len(mulcontents),
+                                                image.size[0] - font_size * len(mulcontents) / 2),
+                                 random.randint(0, image.size[1] - font_size * max([len(i) for i in mulcontents])))
+            # print("left_center_point {}".format(left_center_point))
             color = utils.setColor(image)
             for content in mulcontents:
                 content_points = []
@@ -121,8 +132,14 @@ class OCRData(object):
                 for character in content:
                     image, points = self.putOneCharacter2Image(character, image, font_path, font_size, left_center_point, color)
                     content_points.append(points)
-                    left_center_point = (max(points[1][0], points[2][0]), left_center_point[1])
-                left_center_point = utils.getNewLeftCenterPointByContentPoints(content_points)
+                    # left_center_point = (max(points[1][0], points[2][0]), left_center_point[1])
+
+                    left_center_point = (left_center_point[0], max(points[1][1], points[2][1])+20)
+                    # print("left_center_point {}".format(left_center_point))
+                # left_center_point = utils.getNewLeftCenterPointByContentPoints(content_points)
+                left_center_point = utils.getNewTopCenterPointByContentPoints(content_points)
+                # print("left_center_point {}".format(left_center_point))
+                # print("miao")
                 mulcontents_points.append(content_points)
             if add_rectangle == 1:
                 image = utils.drawMulContentsRectangle(image, mulcontents_points)
@@ -206,11 +223,11 @@ class OCRData(object):
 if __name__ == '__main__':
     t1 = threading.Thread(target=main, args=('1',))
     t1.start()
-    t2 = threading.Thread(target=main, args=('2',))
-    t2.start()
-    t3 = threading.Thread(target=main, args=('3',))
-    t3.start()
-    t4 = threading.Thread(target=main, args=('4',))
-    t4.start()
-    t5 = threading.Thread(target=main, args=('5',))
-    t5.start()
+    # t2 = threading.Thread(target=main, args=('2',))
+    # t2.start()
+    # t3 = threading.Thread(target=main, args=('3',))
+    # t3.start()
+    # t4 = threading.Thread(target=main, args=('4',))
+    # t4.start()
+    # t5 = threading.Thread(target=main, args=('5',))
+    # t5.start()

@@ -217,11 +217,30 @@ def getPointByCenterLine(center_line, left_top_point, width, height):
     return points
 
 def getNewLeftCenterPointByContentPoints(content_points):
+    print("content_points {}".format(content_points))
     left = content_points[0][0][0]
     bottom_line = getTopOrBottomLineInPoints(content_points, is_top=0)
     top_line = getTopOrBottomLineInPoints(content_points, is_top=1)
     height = bottom_line - top_line
     return (left, bottom_line+height/2)
+
+def getNewTopCenterPointByContentPoints(content_points):
+    top = content_points[0][0][1]
+    left_line = getLeftOrRightLineInPoints(content_points, is_left=1)
+    right_line = getLeftOrRightLineInPoints(content_points, is_left=0)
+    width = right_line - left_line
+    return (right_line+width/2, top)
+
+def getLeftOrRightLineInPoints(points, is_left):
+    list = []
+    if is_left:
+        for i in points:
+            list.append(min(i[:, 0]))
+        return min(list)
+    else:
+        for i in points:
+            list.append(max(i[:, 0]))
+        return max(list)
 
 def getTopOrBottomLineInPoints(points, is_top):
     list = []
@@ -249,7 +268,8 @@ def cropImageByPoints(image, points,):
 
 def addRandomInROI(roi):
     left, top, right, bottom = (roi[0][0],roi[0][1],roi[2][0],roi[2][1])
-    max_randint = (bottom - top) / 6
+    # max_randint = (bottom - top) / 6
+    max_randint = (right - left) / 6
     # change to int by Foxerlee
     # print(max_randint)
     # print(left)
